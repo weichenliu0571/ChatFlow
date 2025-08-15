@@ -1,0 +1,33 @@
+<!doctype html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head><title>Sign Up - ChatFlow</title></head>
+<body>
+<h2>Create your account</h2>
+
+<form th:action="@{/signup}" method="post" th:object="${signupForm}">
+  <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+
+  <div>
+    <label>Username</label>
+    <input type="text" th:field="*{username}" required autofocus>
+    <div th:if="${#fields.hasErrors('username')}" th:errors="*{username}"></div>
+  </div>
+
+  <div>
+    <label>Password</label>
+    <input type="password" th:field="*{password}" required>
+    <div th:if="${#fields.hasErrors('password')}" th:errors="*{password}"></div>
+  </div>
+
+  <div>
+    <label>Confirm Password</label>
+    <input type="password" th:field="*{confirmPassword}" required>
+    <div th:if="${#fields.hasErrors('confirmPassword')}" th:errors="*{confirmPassword}"></div>
+  </div>
+
+  <button type="submit">Create account</button>
+</form>
+
+<p><a th:href="@{/login}">Back to login</a></p>
+</body>
+</html>
