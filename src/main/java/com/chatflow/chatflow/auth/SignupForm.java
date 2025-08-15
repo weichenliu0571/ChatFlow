@@ -1,5 +1,6 @@
 package com.chatflow.chatflow.auth;
 
+/* jakarta is used for input validation */
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 import lombok.Data;
