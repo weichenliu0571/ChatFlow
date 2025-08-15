@@ -25,7 +25,7 @@ public class SignupController {
 
   @GetMapping("/signup")
   public String signupForm(Model model) {
-    model.addAttribute("signupForm", new SignupForm());
+    model.addAttribute("signupForm", new SignupForm()); /* maps java object to html attributes */
     return "signup";
   }
 

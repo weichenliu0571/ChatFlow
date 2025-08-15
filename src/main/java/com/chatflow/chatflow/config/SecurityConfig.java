@@ -5,7 +5,6 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
-import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.provisioning.JdbcUserDetailsManager;
@@ -24,14 +23,14 @@ public class SecurityConfig {
         .anyRequest().authenticated()
       )
       .formLogin(form -> form
-        .loginPage("/login")
-        .loginProcessingUrl("/login")
+        .loginPage("/login") /* custom login page */
+        .loginProcessingUrl("/login") /* tells spring boot to deal with the route /login as login */
         .defaultSuccessUrl("/", true)
         .failureUrl("/login?error=true")
         .permitAll()
       )
       .logout(logout -> logout
-        .logoutUrl("/logout")
+        .logoutUrl("/logout") /* tells spring boot to deal with the route /logout as logout */
         .logoutSuccessUrl("/login?logout")
       )
       .csrf(Customizer.withDefaults());
@@ -45,6 +44,6 @@ public class SecurityConfig {
 
   @Bean
   public UserDetailsManager userDetailsManager(DataSource dataSource) {
-    return new JdbcUserDetailsManager(dataSource);
+    return new JdbcUserDetailsManager(dataSource); /* spring boot automatically injects datasource with the default db we have set up */
   }
 }
