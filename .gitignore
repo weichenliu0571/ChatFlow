@@ -1,10 +1,12 @@
 HELP.md
-target/
-# .mvn/wrapper/maven-wrapper.jar
-!**/src/main/**/target/
-!**/src/test/**/target/
 
-### STS ###
+### Maven ###
+target/
+
+# Optional wrapper JAR
+# .mvn/wrapper/maven-wrapper.jar
+
+### STS (Spring Tool Suite) ###
 .apt_generated
 .classpath
 .factorypath
@@ -31,3 +33,16 @@ build/
 
 ### VS Code ###
 .vscode/
+
+### Node / Tailwind ###
+frontend/node_modules/
+frontend/.npm/
+frontend/.turbo/
+frontend/.next/
+frontend/dist/
+frontend/build/
+
+# OS junk
+*.tmp
+*.swp
+*.DS_Store
