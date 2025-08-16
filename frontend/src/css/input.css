@@ -1,0 +1,5 @@
+@import "tailwindcss";
+
+/* Tell Tailwind to scan Thymeleaf templates for class usage */
+@source "../../../src/main/resources/templates/**/*.html";
+@source "../../../src/main/resources/static/**/*.js";
