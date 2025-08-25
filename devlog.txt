@@ -1,0 +1,1 @@
+8/25/25 - fixed conflict issue with app.cs, restored navbar, added messaging area, fixed buttons/backend paths 
