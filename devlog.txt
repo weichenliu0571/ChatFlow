@@ -1,2 +1,11 @@
+DEVLOG
+------------------------------------------------------------------------------------------------------------------------------
+8/15/25 - (weichenliu) setting up springboot project files according to maven
+------------------------------------------------------------------------------------------------------------------------------
+8/18/25 - (weichenliu) completed signup, login, logout
+------------------------------------------------------------------------------------------------------------------------------
 8/20/25 - (yox1000) navbar, added functionalities including delete account, disabled other buttons that are still in progress
-8/25/25 - (yox1000) fixed conflict issue with app.cs, restored navbar, added messaging area, fixed buttons/backend paths 
+------------------------------------------------------------------------------------------------------------------------------
+8/25/25 - (yox1000) fixed conflict issue with app.cs, restored navbar, added messaging area, fixed buttons/backend paths
+------------------------------------------------------------------------------------------------------------------------------
+8/25/25 - (weichenliu) completed changepassword
