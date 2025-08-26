@@ -13,6 +13,8 @@ public class ProfileController {
     public String profilePicture(@AuthenticationPrincipal UserDetails user, Model model) {
         if (user != null) {
             model.addAttribute("username", user.getUsername());
+        } else {
+            model.addAttribute("username", "Guest"); // fallback to avoid null
         }
         return "profilepicture"; // renders profilepicture.html
     }
