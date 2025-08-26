@@ -43,7 +43,15 @@
         <!-- Right: Profile picture -->
         <div class="relative" id="profileMenu">
             <button onclick="toggleDropdown()">
-                <div class="w-8 h-8 rounded-full bg-blue-500 text-white flex items-center justify-center font-bold">
+                <!-- Show avatar if user has -->
+                <img th:if="${avatarUrl != null}"
+                    th:src="${avatarUrl}"
+                    alt="avatar"
+                    class="w-8 h-8 rounded-full object-cover border" />
+
+                <!-- Otherwise, fall back to first letter -->
+                <div th:if="${avatarUrl == null}"
+                    class="w-8 h-8 rounded-full bg-blue-500 text-white flex items-center justify-center font-bold">
                     <span th:text="${#strings.isEmpty(username) ? 'U' : #strings.substring(username,0,1)}">U</span>
                 </div>
             </button>

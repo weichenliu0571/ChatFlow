@@ -11,15 +11,21 @@
   <div class="bg-white p-8 rounded-2xl shadow-lg w-96">
     <h2 class="text-2xl font-bold text-center text-blue-600 mb-6">Profile Picture</h2>
 
-    <!-- Default profile picture: first letter of username -->
-    <div class="w-24 h-24 bg-gray-300 text-white text-4xl font-bold flex items-center justify-center rounded-full mx-auto mb-4"
+    <!-- Show saved avatar if available, else fallback to letter -->
+    <div th:if="${avatarUrl != null}" class="flex justify-center mb-4">
+      <img th:src="${avatarUrl}" alt="Avatar"
+           class="w-24 h-24 rounded-full object-cover border shadow" />
+    </div>
+
+    <div th:if="${avatarUrl == null}"
+         class="w-24 h-24 bg-gray-300 text-white text-4xl font-bold flex items-center justify-center rounded-full mx-auto mb-4"
          th:text="${username != null} ? ${#strings.substring(username,0,1).toUpperCase()} : 'U'">
     </div>
 
-    <!-- Upload button (non-functional for now) -->
-    <button class="w-full bg-blue-500 hover:bg-blue-600 text-white font-semibold py-2 px-4 rounded-lg shadow">
-      Upload Picture
-    </button>
+    <a th:href="@{/choose-avatar}"
+       class="block w-full text-center bg-blue-500 hover:bg-blue-600 text-white font-semibold py-2 px-4 rounded-lg shadow mb-4">
+      Choose Avatar
+    </a>
 
     <div class="mt-4 text-center">
       <a th:href="@{/}" class="text-gray-600 hover:underline">Back to Home</a>
