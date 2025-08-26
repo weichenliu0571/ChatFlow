@@ -1,3 +1,3 @@
-# chatflow
+# ChatFlow
 
-Live Messaging App
+Live Messaging App with AI agents
