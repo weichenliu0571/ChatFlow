@@ -19,15 +19,15 @@
             }
         });
 
-        // Load chat for selected friend
-        function openChat(friendName) {
-            document.getElementById('chatWith').innerText = friendName;
+        // Load chat for selected friend or agent
+        function openChat(name) {
+            document.getElementById('chatWith').innerText = name;
             // Clear previous messages (for now)
             document.getElementById('chatMessages').innerHTML = '';
             // Example: add a welcome message
             let msg = document.createElement('div');
             msg.className = 'text-gray-700 mb-2';
-            msg.innerText = 'You opened a chat with ' + friendName;
+            msg.innerText = 'You opened a chat with ' + name;
             document.getElementById('chatMessages').appendChild(msg);
         }
     </script>
@@ -84,7 +84,7 @@
     <!-- Main Content -->
     <div class="flex flex-1 overflow-hidden">
 
-        <!-- Left Sidebar: Friends List -->
+        <!-- Left Sidebar: Friends + AI Agents -->
         <aside class="w-64 bg-white shadow-inner p-4 overflow-y-auto">
             <h2 class="text-xl font-semibold mb-4 text-blue-600">Friends</h2>
             <ul>
@@ -108,6 +108,17 @@
                     </button>
                 </li>                
             </ul>
+
+            <!-- AI Agents Section -->
+            <h2 class="text-xl font-semibold mb-4 text-blue-600 mt-6">AI Agents</h2>
+            <ul>
+                <li class="mb-2">
+                    <button onclick="openChat('Grok')"
+                            class="w-full text-left px-3 py-2 rounded hover:bg-gray-100">
+                        Grok
+                    </button>
+                </li>
+            </ul>
         </aside>
 
         <!-- Right Main Area: Chat -->
@@ -115,7 +126,7 @@
             <div class="flex-1 overflow-y-auto mb-4">
                 <h2 class="text-xl font-semibold mb-4 text-blue-600">Chat with <span id="chatWith">...</span></h2>
                 <div id="chatMessages" class="space-y-2">
-                    <p class="text-gray-500">Select a friend to start chatting.</p>
+                    <p class="text-gray-500">Select a friend or AI agent to start chatting.</p>
                 </div>
             </div>
             <!-- Message input -->
