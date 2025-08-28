@@ -16,7 +16,6 @@ Live Messaging App with AI agents
     username VARCHAR(50) NOT NULL REFERENCES users(username) ON DELETE CASCADE,
     authority VARCHAR(50) NOT NULL,
     PRIMARY KEY (username, authority)
-
   );
 6. GRANT USAGE ON SCHEMA public TO chatflow_user;
    GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA public TO chatflow_user;
