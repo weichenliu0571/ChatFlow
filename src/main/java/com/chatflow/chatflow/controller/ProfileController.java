@@ -36,13 +36,14 @@ public class ProfileController {
     // Avatar Choices
     @GetMapping("/choose-avatar")
     public String chooseAvatarPage(@AuthenticationPrincipal UserDetails user, Model model) {
-        if (user == null) return "redirect:/login";
+        if (user == null)
+            return "redirect:/login";
 
         // Update this list as you add files under src/main/resources/static/avatar/
         List<String> choices = List.of(
                 "/avatar/cat.png",
-                "/avatar/dog.png"
-        );
+                "/avatar/dog.png",
+                "/avatar/turtle.png");
         model.addAttribute("choices", choices);
         model.addAttribute("current", repo.getAvatarUrl(user.getUsername()));
         return "choose-avatar";
@@ -51,9 +52,10 @@ public class ProfileController {
     // Save the selected avatar URL (stored in users.avatar_url)
     @PostMapping("/choose-avatar")
     public String chooseAvatar(@AuthenticationPrincipal UserDetails user,
-                               @RequestParam("avatarUrl") String avatarUrl,
-                               RedirectAttributes redirect) {
-        if (user == null) return "redirect:/login";
+            @RequestParam("avatarUrl") String avatarUrl,
+            RedirectAttributes redirect) {
+        if (user == null)
+            return "redirect:/login";
 
         // Path Validation
         if (avatarUrl == null || !avatarUrl.startsWith("/avatar/")) {
