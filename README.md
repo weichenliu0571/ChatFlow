@@ -1,6 +1,6 @@
 # ChatFlow
 
-Live Messaging App with AI agents
+Live Messaging App utilizimg websocket and AI Agent Chat with Grok API
 
 ## Process to Run Code
 1. clone the repo
