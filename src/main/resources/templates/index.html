@@ -22,14 +22,63 @@
         // Load chat for selected friend or agent
         function openChat(name) {
             document.getElementById('chatWith').innerText = name;
-            // Clear previous messages (for now)
             document.getElementById('chatMessages').innerHTML = '';
-            // Example: add a welcome message
-            let msg = document.createElement('div');
-            msg.className = 'text-gray-700 mb-2';
-            msg.innerText = 'You opened a chat with ' + name;
-            document.getElementById('chatMessages').appendChild(msg);
+
+            // Load previous history from backend
+            fetch(`/chat/history?recipient=${name}`)
+                .then(res => res.json())
+                .then(messages => {
+                    if (messages.length === 0) {
+                        let msg = document.createElement('p');
+                        msg.className = 'text-gray-500';
+                        msg.innerText = `No previous messages with ${name}.`;
+                        document.getElementById('chatMessages').appendChild(msg);
+                    } else {
+                        messages.forEach(m => {
+                            let msg = document.createElement('div');
+                            // If it's your message
+                            if (m.startsWith("You:")) {
+                                msg.className = 'self-end bg-blue-500 text-white px-4 py-2 rounded-2xl max-w-xs text-sm mb-2';
+                                msg.innerText = m.replace("You:", "").trim();
+                            } else {
+                                // Other person's message
+                                msg.className = 'self-start bg-gray-200 text-gray-800 px-4 py-2 rounded-2xl max-w-xs text-sm mb-2';
+                                msg.innerText = m;
+                            }
+                            document.getElementById('chatMessages').appendChild(msg);
+                        });
+                    }
+                });
         }
+
+        // Send a message
+        function sendMessage() {
+            const recipient = document.getElementById('chatWith').innerText;
+            const input = document.querySelector('input[type=text]');
+            const message = input.value.trim();
+
+            if (!recipient || recipient === "...") {
+                alert("Select someone to chat with first!");
+                return;
+            }
+            if (!message) return;
+
+            fetch(`/chat/send?recipient=${recipient}&message=${encodeURIComponent(message)}`, {
+                method: 'POST'
+            }).then(() => {
+                // 🔹 Remove placeholder if it's still there
+                const placeholder = document.querySelector('#chatMessages p.text-gray-500');
+                if (placeholder) placeholder.remove();
+
+                // Show the message as a bubble
+                let msg = document.createElement('div');
+                msg.className = 'self-end bg-blue-500 text-white px-4 py-2 rounded-2xl max-w-xs text-sm mb-2';
+                msg.innerText = message;
+                document.getElementById('chatMessages').appendChild(msg);
+                input.value = "";
+            });
+        }
+
     </script>
 </head>
 
@@ -88,7 +137,6 @@
         <aside class="w-64 bg-white shadow-inner p-4 overflow-y-auto">
             <h2 class="text-xl font-semibold mb-4 text-blue-600">Friends</h2>
             <ul>
-                <!-- Example friends; replace with Thymeleaf loop -->
                 <li class="mb-2">
                     <button onclick="openChat('Alice')"
                             class="w-full text-left px-3 py-2 rounded hover:bg-gray-100">
@@ -125,7 +173,7 @@
         <main class="flex-1 p-6 flex flex-col bg-gray-50 overflow-hidden">
             <div class="flex-1 overflow-y-auto mb-4">
                 <h2 class="text-xl font-semibold mb-4 text-blue-600">Chat with <span id="chatWith">...</span></h2>
-                <div id="chatMessages" class="space-y-2">
+                <div id="chatMessages" class="space-y-2 flex flex-col">
                     <p class="text-gray-500">Select a friend or AI agent to start chatting.</p>
                 </div>
             </div>
@@ -133,13 +181,12 @@
             <div class="flex mt-auto">
                 <input type="text" placeholder="Type your message..."
                        class="flex-1 px-4 py-2 rounded-l-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500"/>
-                <button class="bg-blue-500 text-white px-4 py-2 rounded-r-lg hover:bg-blue-600">
+                <button onclick="sendMessage()" 
+                        class="bg-blue-500 text-white px-4 py-2 rounded-r-lg hover:bg-blue-600">
                     Send
                 </button>
             </div>
         </main>
-
     </div>
-
 </body>
 </html>
