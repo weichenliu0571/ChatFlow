@@ -24,7 +24,6 @@
             document.getElementById('chatWith').innerText = name;
             document.getElementById('chatMessages').innerHTML = '';
 
-            // Load previous history from backend
             fetch(`/chat/history?recipient=${name}`)
                 .then(res => res.json())
                 .then(messages => {
@@ -36,12 +35,10 @@
                     } else {
                         messages.forEach(m => {
                             let msg = document.createElement('div');
-                            // If it's your message
                             if (m.startsWith("You:")) {
                                 msg.className = 'self-end bg-blue-500 text-white px-4 py-2 rounded-2xl max-w-xs text-sm mb-2';
                                 msg.innerText = m.replace("You:", "").trim();
                             } else {
-                                // Other person's message
                                 msg.className = 'self-start bg-gray-200 text-gray-800 px-4 py-2 rounded-2xl max-w-xs text-sm mb-2';
                                 msg.innerText = m;
                             }
@@ -66,11 +63,9 @@
             fetch(`/chat/send?recipient=${recipient}&message=${encodeURIComponent(message)}`, {
                 method: 'POST'
             }).then(() => {
-                // 🔹 Remove placeholder if it's still there
                 const placeholder = document.querySelector('#chatMessages p.text-gray-500');
                 if (placeholder) placeholder.remove();
 
-                // Show the message as a bubble
                 let msg = document.createElement('div');
                 msg.className = 'self-end bg-blue-500 text-white px-4 py-2 rounded-2xl max-w-xs text-sm mb-2';
                 msg.innerText = message;
@@ -79,6 +74,76 @@
             });
         }
 
+        // Autocomplete: search users while typing
+        function searchUsers(query) {
+            const resultsBox = document.getElementById("searchResults");
+            if (!query) {
+                resultsBox.innerHTML = "";
+                resultsBox.classList.add("hidden");
+                return;
+            }
+
+            fetch(`/users/search?q=${encodeURIComponent(query)}`)
+              .then(res => res.json())
+              .then(users => {
+                  if (users.length === 0) {
+                      resultsBox.innerHTML = "<div class='px-2 py-1 text-gray-500'>No matches</div>";
+                      resultsBox.classList.remove("hidden");
+                  } else {
+                      resultsBox.innerHTML = "";
+                      users.forEach(u => {
+                          const div = document.createElement("div");
+                          div.className = "px-2 py-1 hover:bg-gray-100 cursor-pointer";
+                          div.innerText = u;
+                          div.onclick = () => {
+                              document.getElementById("friendSearch").value = u;
+                              resultsBox.classList.add("hidden");
+                          };
+                          resultsBox.appendChild(div);
+                      });
+                      resultsBox.classList.remove("hidden");
+                  }
+              });
+        }
+
+        // Add friend
+        function addFriendFromInput() {
+            const username = document.getElementById("friendSearch").value.trim();
+            if (!username) return;
+            fetch(`/friends/add?username=${encodeURIComponent(username)}`, { method: "POST" })
+              .then(res => res.text())
+              .then(msg => {
+                  alert(msg);
+                  document.getElementById("friendSearch").value = "";
+                  document.getElementById("searchResults").classList.add("hidden");
+                  loadFriends();
+              });
+        }
+
+        // Load friends
+        function loadFriends() {
+            fetch("/friends")
+              .then(res => res.json())
+              .then(friends => {
+                  const list = document.getElementById("userList");
+                  list.innerHTML = "";
+                  if (friends.length === 0) {
+                      list.innerHTML = `<p class="text-gray-500">You have no friends yet.</p>`;
+                  } else {
+                      friends.forEach(u => {
+                          let li = document.createElement("li");
+                          li.innerHTML = `
+                              <button onclick="openChat('${u}')"
+                                      class="w-full text-left px-3 py-2 rounded hover:bg-gray-100">
+                                  ${u}
+                              </button>`;
+                          list.appendChild(li);
+                      });
+                  }
+              });
+        }
+
+        window.addEventListener("DOMContentLoaded", loadFriends);
     </script>
 </head>
 
@@ -86,39 +151,28 @@
 
     <!-- Navbar -->
     <nav class="bg-white shadow-md px-6 py-3 flex justify-between items-center">
-        <!-- Left: Logo -->
         <div class="text-2xl font-bold text-blue-600">ChatFlow</div>
 
-        <!-- Right: Profile picture -->
         <div class="relative" id="profileMenu">
             <button onclick="toggleDropdown()">
-                <!-- Show avatar if user has -->
                 <img th:if="${avatarUrl != null}"
                     th:src="${avatarUrl}"
                     alt="avatar"
                     class="w-8 h-8 rounded-full object-cover border" />
-
-                <!-- Otherwise, fall back to first letter -->
                 <div th:if="${avatarUrl == null}"
                     class="w-8 h-8 rounded-full bg-blue-500 text-white flex items-center justify-center font-bold">
                     <span th:text="${#strings.isEmpty(username) ? 'U' : #strings.substring(username,0,1)}">U</span>
                 </div>
             </button>
 
-            <!-- Dropdown -->
             <div id="profileDropdown"
                  class="hidden absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg py-2 z-10">
                 <p class="px-4 py-2 text-gray-700 font-semibold"
                    th:text="${#strings.isEmpty(username) ? 'Unknown User' : username}">
                     Username
                 </p>
-
-                <a href="/profilepicture"
-                   class="block px-4 py-2 text-gray-600 hover:bg-gray-100">Change Profile Picture</a>
-
-                <a href="/settings"
-                   class="block px-4 py-2 text-gray-600 hover:bg-gray-100">Settings</a>
-
+                <a href="/profilepicture" class="block px-4 py-2 text-gray-600 hover:bg-gray-100">Change Profile Picture</a>
+                <a href="/settings" class="block px-4 py-2 text-gray-600 hover:bg-gray-100">Settings</a>
                 <form th:action="@{/logout}" method="post" class="mt-2 border-t">
                     <input type="hidden" name="_csrf" th:value="${_csrf.token}" />
                     <button type="submit"
@@ -133,31 +187,27 @@
     <!-- Main Content -->
     <div class="flex flex-1 overflow-hidden">
 
-        <!-- Left Sidebar: Friends + AI Agents -->
+        <!-- Sidebar: Friends -->
         <aside class="w-64 bg-white shadow-inner p-4 overflow-y-auto">
             <h2 class="text-xl font-semibold mb-4 text-blue-600">Friends</h2>
-            <ul>
-                <li class="mb-2">
-                    <button onclick="openChat('Alice')"
-                            class="w-full text-left px-3 py-2 rounded hover:bg-gray-100">
-                        Alice
-                    </button>
-                </li>
-                <li class="mb-2">
-                    <button onclick="openChat('Bob')"
-                            class="w-full text-left px-3 py-2 rounded hover:bg-gray-100">
-                        Bob
-                    </button>
-                </li>
-                <li class="mb-2">
-                    <button onclick="openChat('Charlie')"
-                            class="w-full text-left px-3 py-2 rounded hover:bg-gray-100">
-                        Charlie
-                    </button>
-                </li>                
-            </ul>
 
-            <!-- AI Agents Section -->
+            <!-- Search + autocomplete -->
+            <div class="mb-4 relative">
+                <input type="text" id="friendSearch" placeholder="Enter username"
+                       class="border px-2 py-1 rounded w-2/3"
+                       oninput="searchUsers(this.value)">
+                <div id="searchResults" 
+                     class="absolute bg-white border rounded w-2/3 mt-1 z-10 hidden"></div>
+            </div>
+            <button onclick="addFriendFromInput()"
+                    class="bg-green-500 text-white px-3 py-1 rounded mb-4">
+                Add
+            </button>
+
+            <!-- Friends list -->
+            <ul id="userList"></ul>
+
+            <!-- AI Agents -->
             <h2 class="text-xl font-semibold mb-4 text-blue-600 mt-6">AI Agents</h2>
             <ul>
                 <li class="mb-2">
@@ -169,7 +219,7 @@
             </ul>
         </aside>
 
-        <!-- Right Main Area: Chat -->
+        <!-- Chat area -->
         <main class="flex-1 p-6 flex flex-col bg-gray-50 overflow-hidden">
             <div class="flex-1 overflow-y-auto mb-4">
                 <h2 class="text-xl font-semibold mb-4 text-blue-600">Chat with <span id="chatWith">...</span></h2>
@@ -177,7 +227,6 @@
                     <p class="text-gray-500">Select a friend or AI agent to start chatting.</p>
                 </div>
             </div>
-            <!-- Message input -->
             <div class="flex mt-auto">
                 <input type="text" placeholder="Type your message..."
                        class="flex-1 px-4 py-2 rounded-l-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500"/>

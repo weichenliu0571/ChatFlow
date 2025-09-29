@@ -17,12 +17,12 @@ public class UserController {
         this.userRepo = userRepo;
     }
 
-    @GetMapping
-    public List<String> listUsers(Principal principal) {
-        String currentUser = principal.getName();
-        return userRepo.findAll().stream()
+    // 👇 NEW: autocomplete endpoint
+    @GetMapping("/search")
+    public List<String> searchUsers(@RequestParam String q) {
+        return userRepo.findByUsernameContainingIgnoreCase(q)
+                .stream()
                 .map(User::getUsername)
-                .filter(username -> !username.equals(currentUser)) // exclude yourself
-                .collect(Collectors.toList());
+                .toList();
     }
 }
