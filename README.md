@@ -10,8 +10,8 @@ Live Messaging App utilizimg websocket and AI Agent Chat with Grok API
     username VARCHAR(50) PRIMARY KEY,
     password VARCHAR(100) NOT NULL,
     enabled  BOOLEAN NOT NULL,
-    avatar   VARCHAR(255)         
-  );
+    avatar   VARCHAR(255)
+   );
 5. CREATE TABLE IF NOT EXISTS authorities (
     username VARCHAR(50) NOT NULL REFERENCES users(username) ON DELETE CASCADE,
     authority VARCHAR(50) NOT NULL,
