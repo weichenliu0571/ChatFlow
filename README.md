@@ -28,8 +28,7 @@ Live Messaging App utilizimg websocket and AI Agent Chat with Grok API
     CONSTRAINT chk_no_self_request CHECK (requester_username <> addressee_username),
     CONSTRAINT fk_req_requester FOREIGN KEY (requester_username) REFERENCES users(username) ON DELETE CASCADE,
     CONSTRAINT fk_req_addressee FOREIGN KEY (addressee_username) REFERENCES users(username) ON DELETE CASCADE
-
-);
+   );
 7. CREATE TABLE friendships (
     id BIGSERIAL PRIMARY KEY,
     user_username   VARCHAR NOT NULL,
@@ -39,7 +38,7 @@ Live Messaging App utilizimg websocket and AI Agent Chat with Grok API
     CONSTRAINT chk_no_self_friend CHECK (user_username <> friend_username),
     CONSTRAINT fk_friend_user FOREIGN KEY (user_username) REFERENCES users(username) ON DELETE CASCADE,
     CONSTRAINT fk_friend_friend FOREIGN KEY (friend_username) REFERENCES users(username) ON DELETE CASCADE
-);
+   );
 8. GRANT USAGE ON SCHEMA public TO chatflow_user;
    GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA public TO chatflow_user;
    ALTER DEFAULT PRIVILEGES IN SCHEMA public
