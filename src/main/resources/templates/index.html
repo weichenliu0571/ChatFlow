@@ -75,36 +75,86 @@
         }
 
         // Autocomplete: search users while typing
-        function searchUsers(query) {
+
+        // default delay of 200 ms before calling suggest again
+        function debounce(fn, d = 200) {
+            let t; return (...a) => { clearTimeout(t); t = setTimeout(() => fn(...a), d); };
+        }
+
+        // prevent hacks
+        function esc(s){
+            return s.replace(/[&<>"']/g, c => ({
+                "&": "&amp;",
+                "<": "&lt;",
+                ">": "&gt;",      
+                "\"": "&quot;",
+                "'": "&#39;"
+            }[c]));
+        }
+
+        // init after DOM ready
+        window.addEventListener("DOMContentLoaded", () => {
+            const input = document.getElementById("friendSearch");
             const resultsBox = document.getElementById("searchResults");
-            if (!query) {
-                resultsBox.innerHTML = "";
-                resultsBox.classList.add("hidden");
-                return;
+            let activeIndex = -1;
+            let suggestions = [];
+
+            async function fetchNames(q){
+                const resp = await fetch(`/users/suggest?q=${encodeURIComponent(q)}`, { credentials: "include" });
+                if (!resp.ok) return [];
+                return resp.json();
             }
 
-            fetch(`/users/search?q=${encodeURIComponent(query)}`)
-              .then(res => res.json())
-              .then(users => {
-                  if (users.length === 0) {
-                      resultsBox.innerHTML = "<div class='px-2 py-1 text-gray-500'>No matches</div>";
-                      resultsBox.classList.remove("hidden");
-                  } else {
-                      resultsBox.innerHTML = "";
-                      users.forEach(u => {
-                          const div = document.createElement("div");
-                          div.className = "px-2 py-1 hover:bg-gray-100 cursor-pointer";
-                          div.innerText = u;
-                          div.onclick = () => {
-                              document.getElementById("friendSearch").value = u;
-                              resultsBox.classList.add("hidden");
-                          };
-                          resultsBox.appendChild(div);
-                      });
-                      resultsBox.classList.remove("hidden");
-                  }
-              });
-        }
+            function render(items){
+                suggestions = items; activeIndex = -1;
+                if (!items.length){
+                resultsBox.innerHTML = "<div class='px-2 py-1 text-gray-500'>No matches</div>";
+                resultsBox.classList.remove("hidden");
+                return;
+                }
+                resultsBox.innerHTML = items.map((u,i)=>`
+                <div class="px-2 py-1 hover:bg-gray-100 cursor-pointer"
+                    role="option" id="sr-${i}"
+                    onclick="selectUser('${esc(u)}')">${esc(u)}</div>
+                `).join("");
+                resultsBox.classList.remove("hidden");
+            }
+
+            const doSearch = debounce(async (val)=>{
+                const q = (val||"").trim();
+                if (q.length < 2){ resultsBox.innerHTML = ""; resultsBox.classList.add("hidden"); return; }
+                try { render(await fetchNames(q)); }
+                catch { resultsBox.innerHTML = ""; resultsBox.classList.add("hidden"); }
+            }, 200);
+
+            // called by oninput="searchUsers(this.value)"
+            window.searchUsers = (v)=>doSearch(v);
+
+            window.selectUser = (u)=>{
+                input.value = u;
+                resultsBox.classList.add("hidden");
+                resultsBox.innerHTML = "";
+            };
+
+            document.addEventListener("click",(e)=>{
+                if (!resultsBox.contains(e.target) && e.target !== input){
+                resultsBox.classList.add("hidden");
+                }
+            });
+
+            input.addEventListener("keydown",(e)=>{
+                if (resultsBox.classList.contains("hidden") || suggestions.length === 0) return;
+                if (e.key==="ArrowDown"){ e.preventDefault(); activeIndex=(activeIndex+1)%suggestions.length; updateActive(); }
+                else if (e.key==="ArrowUp"){ e.preventDefault(); activeIndex=(activeIndex-1+suggestions.length)%suggestions.length; updateActive(); }
+                else if (e.key==="Enter" && activeIndex>=0){ e.preventDefault(); window.selectUser(suggestions[activeIndex]); }
+                else if (e.key==="Escape"){ resultsBox.classList.add("hidden"); }
+            });
+
+            function updateActive(){
+                [...resultsBox.children].forEach((el,i)=>el.classList.toggle("bg-gray-100", i===activeIndex));
+            }
+
+        });
 
         // Add friend
         function addFriendFromInput() {
@@ -142,6 +192,8 @@
                   }
               });
         }
+
+
 
         window.addEventListener("DOMContentLoaded", loadFriends);
     </script>
@@ -187,36 +239,40 @@
     <!-- Main Content -->
     <div class="flex flex-1 overflow-hidden">
 
-        <!-- Sidebar: Friends -->
+        <!-- Sidebar (using aside key word) -->
         <aside class="w-64 bg-white shadow-inner p-4 overflow-y-auto">
-            <h2 class="text-xl font-semibold mb-4 text-blue-600">Friends</h2>
+        <h2 class="text-xl font-semibold mb-4 text-blue-600">Friends</h2>
 
-            <!-- Search + autocomplete -->
-            <div class="mb-4 relative">
-                <input type="text" id="friendSearch" placeholder="Enter username"
-                       class="border px-2 py-1 rounded w-2/3"
-                       oninput="searchUsers(this.value)">
-                <div id="searchResults" 
-                     class="absolute bg-white border rounded w-2/3 mt-1 z-10 hidden"></div>
+        <!-- Search row -->
+        <div class="mb-2 flex items-center gap-2">
+            <div class="flex-1">
+            <input type="text" id="friendSearch" placeholder="Enter username"
+                    class="border px-2 py-1 rounded w-full"
+                    oninput="searchUsers(this.value)">
             </div>
             <button onclick="addFriendFromInput()"
-                    class="bg-green-500 text-white px-3 py-1 rounded mb-4">
-                Add
+                    class="bg-green-500 text-white px-3 py-1 rounded">
+            Add
             </button>
+        </div>
 
-            <!-- Friends list -->
-            <ul id="userList"></ul>
+        <!-- Popup with Suggestions -->
+        <div id="searchResults"
+            class="bg-white border rounded w-full mb-6 hidden max-h-56 overflow-y-auto shadow"></div>
 
-            <!-- AI Agents -->
-            <h2 class="text-xl font-semibold mb-4 text-blue-600 mt-6">AI Agents</h2>
-            <ul>
-                <li class="mb-2">
-                    <button onclick="openChat('Grok')"
-                            class="w-full text-left px-3 py-2 rounded hover:bg-gray-100">
-                        Grok
-                    </button>
-                </li>
-            </ul>
+        <!-- Friends list -->
+        <ul id="userList"></ul>
+
+        <!-- AI Agents -->
+        <h2 class="text-xl font-semibold mb-4 text-blue-600 mt-6">AI Agents</h2>
+        <ul>
+            <li class="mb-2">
+            <button onclick="openChat('Grok')"
+                    class="w-full text-left px-3 py-2 rounded hover:bg-gray-100">
+                Grok
+            </button>
+            </li>
+        </ul>
         </aside>
 
         <!-- Chat area -->
