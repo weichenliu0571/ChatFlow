@@ -16,7 +16,7 @@ Live Messaging App utilizimg websocket and AI Agent Chat with Grok API
     username VARCHAR(50) NOT NULL REFERENCES users(username) ON DELETE CASCADE,
     authority VARCHAR(50) NOT NULL,
     PRIMARY KEY (username, authority)
-  );
+   );
 6. CREATE TABLE friend_requests (
     id BIGSERIAL PRIMARY KEY,
     requester_username VARCHAR NOT NULL,
