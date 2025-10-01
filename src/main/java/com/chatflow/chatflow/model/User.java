@@ -14,7 +14,7 @@ public class User {
     @Column(nullable = false)
     private String password;
 
-    @Column(name = "avatar_url")
+    @Column(name = "avatar")
     private String avatarUrl;
 
     @Column(nullable = false)

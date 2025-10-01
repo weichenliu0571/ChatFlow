@@ -1,7 +1,18 @@
 package com.chatflow.chatflow.model;
 
-import jakarta.persistence.*;
 import java.time.OffsetDateTime;
+
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.Table;
+import jakarta.persistence.UniqueConstraint;
 
 @Entity
 @Table(name = "friend_requests", uniqueConstraints = {
@@ -13,14 +24,12 @@ public class FriendRequest {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    // Who sent the request
     @ManyToOne(optional = false)
-    @JoinColumn(name = "requester_username", nullable = false)
+    @JoinColumn(name = "requester_username", referencedColumnName = "username", nullable = false)
     private User requester;
 
-    // Who received the request
     @ManyToOne(optional = false)
-    @JoinColumn(name = "addressee_username", nullable = false)
+    @JoinColumn(name = "addressee_username", referencedColumnName = "username", nullable = false)
     private User addressee;
 
     @Enumerated(EnumType.STRING)

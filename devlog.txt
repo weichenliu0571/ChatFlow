@@ -13,3 +13,5 @@ DEVLOG
 8/26/25 - (weichenliu) profilechoices
 ------------------------------------------------------------------------------------------------------------------------------
 9/29/25 - (weichenliu) username autofill
+------------------------------------------------------------------------------------------------------------------------------
+9/30/25 - (weichenliu) added debugging files, made readme clearer, and helped with implementation of friend system
