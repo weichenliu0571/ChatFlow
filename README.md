@@ -2,6 +2,8 @@
 
 Live Messaging App utilizimg websocket and AI Agent Chat with Grok API
 
+By weichenliu0751 (Weichen Liu) and yox1000 (Jake Barbaresso)
+
 ## Process to Run Code
 1. clone the repo
 2. download postgres (with pg4admin)
