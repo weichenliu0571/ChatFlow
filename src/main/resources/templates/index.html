@@ -154,53 +154,40 @@
 
         // Add friend (send friend request) with CSRF header
         function addFriendFromInput() {
-            const username = document.getElementById("friendSearch").value.trim();
+            const input = document.getElementById("friendSearch");
+            const username = (input?.value || "").trim();
             if (!username) return;
 
-            const token = document.querySelector("meta[name='_csrf']").content;
-            const header = document.querySelector("meta[name='_csrf_header']").content;
+            const tokenEl  = document.querySelector("meta[name='_csrf']");
+            const headerEl = document.querySelector("meta[name='_csrf_header']");
+            const token  = tokenEl ? tokenEl.content  : null;
+            const header = headerEl ? headerEl.content : null;
 
-            console.log("Sending CSRF:", header, token);  // 👈 debug log
-            console.log("Requester:", currentUser, "Addressee:", username);
+            const url = `/api/friend-requests/${encodeURIComponent(currentUser)}/${encodeURIComponent(username)}`;
 
-            fetch(`/api/friend-requests/${currentUser}/${encodeURIComponent(username)}`, {
+            const headers = { "Accept": "text/plain" };
+            if (header && token) headers[header] = token;
+
+            fetch(url, {
                 method: "POST",
-                headers: { [header]: token }   // add CSRF header
-            }).then(res => {
+                headers,
+                credentials: "same-origin" // send cookies/session for CSRF
+            })
+            .then(async res => {
+                const msg = await res.text().catch(() => "");
                 if (res.ok) {
-                    alert("Friend request sent to " + username);
+                alert(`Friend request sent to ${username}`);
                 } else {
-                    alert("Error sending request");
+                alert(`Error: ${msg || res.status}`);
                 }
-                document.getElementById("friendSearch").value = "";
-                document.getElementById("searchResults").classList.add("hidden");
+            })
+            .catch(err => alert(`Error: ${err.message}`))
+            .finally(() => {
+                if (input) input.value = "";
+                const box = document.getElementById("searchResults");
+                if (box) box.classList.add("hidden");
             });
         }
-
-        // Load friends
-        function loadFriends() {
-            fetch("/friends")
-              .then(res => res.json())
-              .then(friends => {
-                  const list = document.getElementById("userList");
-                  list.innerHTML = "";
-                  if (friends.length === 0) {
-                      list.innerHTML = `<p class="text-gray-500">You have no friends yet.</p>`;
-                  } else {
-                      friends.forEach(u => {
-                          let li = document.createElement("li");
-                          li.innerHTML = `
-                              <button onclick="openChat('${u}')"
-                                      class="w-full text-left px-3 py-2 rounded hover:bg-gray-100">
-                                  ${u}
-                              </button>`;
-                          list.appendChild(li);
-                      });
-                  }
-              });
-        }
-
-        window.addEventListener("DOMContentLoaded", loadFriends);
     </script>
 </head>
 

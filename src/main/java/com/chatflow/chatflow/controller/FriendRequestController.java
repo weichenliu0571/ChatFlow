@@ -1,11 +1,16 @@
 package com.chatflow.chatflow.controller;
 
+import java.util.List;
+
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
 import com.chatflow.chatflow.model.FriendRequest;
 import com.chatflow.chatflow.service.FriendRequestService;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
 
 @RestController
 @RequestMapping("/api/friend-requests")
@@ -17,13 +22,13 @@ public class FriendRequestController {
         this.friendRequestService = friendRequestService;
     }
 
-    // Send a new request
+    // for sending the friend request
     @PostMapping("/{requester}/{addressee}")
-    public ResponseEntity<FriendRequest> sendRequest(
-            @PathVariable String requester,
-            @PathVariable String addressee) {
-        return ResponseEntity.ok(friendRequestService.sendRequest(requester, addressee));
-    }
+    public ResponseEntity<Void> send(@PathVariable String requester,
+                                 @PathVariable String addressee) {
+    friendRequestService.sendRequest(requester, addressee);
+    return ResponseEntity.status(201).build();
+}
 
     // Accept request
     @PostMapping("/{id}/accept")
