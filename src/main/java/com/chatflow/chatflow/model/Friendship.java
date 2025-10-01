@@ -1,46 +1,61 @@
 package com.chatflow.chatflow.model;
 
 import jakarta.persistence.*;
+import java.time.OffsetDateTime;
 
 @Entity
-@Table(name = "friendships")
+@Table(name = "friendships", uniqueConstraints = {
+        @UniqueConstraint(columnNames = { "user_username", "friend_username" })
+})
 public class Friendship {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(nullable = false)
-    private String requester; // who added the friend
+    // One user in the friendship
+    @ManyToOne(optional = false)
+    @JoinColumn(name = "user_username", nullable = false)
+    private User user;
 
-    @Column(nullable = false)
-    private String addressee; // the friend being added
+    // The other user in the friendship
+    @ManyToOne(optional = false)
+    @JoinColumn(name = "friend_username", nullable = false)
+    private User friend;
 
-    public Friendship() {
-    }
+    @Column(name = "since", nullable = false, columnDefinition = "TIMESTAMPTZ")
+    private OffsetDateTime since = OffsetDateTime.now();
 
-    public Friendship(String requester, String addressee) {
-        this.requester = requester;
-        this.addressee = addressee;
-    }
-
+    // Getters and Setters
     public Long getId() {
         return id;
     }
 
-    public String getRequester() {
-        return requester;
+    public void setId(Long id) {
+        this.id = id;
     }
 
-    public void setRequester(String requester) {
-        this.requester = requester;
+    public User getUser() {
+        return user;
     }
 
-    public String getAddressee() {
-        return addressee;
+    public void setUser(User user) {
+        this.user = user;
     }
 
-    public void setAddressee(String addressee) {
-        this.addressee = addressee;
+    public User getFriend() {
+        return friend;
+    }
+
+    public void setFriend(User friend) {
+        this.friend = friend;
+    }
+
+    public OffsetDateTime getSince() {
+        return since;
+    }
+
+    public void setSince(OffsetDateTime since) {
+        this.since = since;
     }
 }
