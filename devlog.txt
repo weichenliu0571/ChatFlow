@@ -21,3 +21,5 @@ DEVLOG
 9/30/25 - (weichenliu) added debugging files, made readme clearer, and helped with implementation of friend system
 ------------------------------------------------------------------------------------------------------------------------------
 10/01/25 - (weichenliu) refactored rest of the features to follow: front end -> controller -> service -> repository -> model
+------------------------------------------------------------------------------------------------------------------------------
+10/01/25 - (yox1000) small adjustments to html organization
