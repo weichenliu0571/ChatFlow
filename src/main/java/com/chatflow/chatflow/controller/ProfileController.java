@@ -11,15 +11,15 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
-import com.chatflow.chatflow.profile.UserProfileRepository;
+import com.chatflow.chatflow.service.UserProfileService;
 
 @Controller
 public class ProfileController {
 
-    private final UserProfileRepository repo;
+    private final UserProfileService service;
 
-    public ProfileController(UserProfileRepository repo) {
-        this.repo = repo;
+    public ProfileController(UserProfileService service) {
+        this.service = service;
     }
 
     // Current Profile Picture
@@ -28,43 +28,38 @@ public class ProfileController {
         String username = (user != null) ? user.getUsername() : "Guest";
         model.addAttribute("username", username);
 
-        String avatarUrl = (user != null) ? repo.getAvatarUrl(username) : null;
+        String avatarUrl = (user != null) ? service.getAvatarUrl(username) : null;
         model.addAttribute("avatarUrl", avatarUrl);
         return "profilepicture";
     }
 
+
     // Avatar Choices
     @GetMapping("/choose-avatar")
     public String chooseAvatarPage(@AuthenticationPrincipal UserDetails user, Model model) {
-        if (user == null)
-            return "redirect:/login";
+        if (user == null) return "redirect:/login";
 
-        // Update this list as you add files under src/main/resources/static/avatar/
-        List<String> choices = List.of(
-                "/avatar/cat.png",
-                "/avatar/dog.png",
-                "/avatar/turtle.png");
+        List<String> choices = service.getAllowedAvatarChoices();
         model.addAttribute("choices", choices);
-        model.addAttribute("current", repo.getAvatarUrl(user.getUsername()));
+        model.addAttribute("current", service.getAvatarUrl(user.getUsername()));
         return "choose-avatar";
     }
 
-    // Save the selected avatar URL (stored in users.avatar_url)
+    // Save the selected avatar URL
     @PostMapping("/choose-avatar")
     public String chooseAvatar(@AuthenticationPrincipal UserDetails user,
-            @RequestParam("avatarUrl") String avatarUrl,
-            RedirectAttributes redirect) {
-        if (user == null)
-            return "redirect:/login";
+                               @RequestParam("avatarUrl") String avatarUrl,
+                               RedirectAttributes redirect) {
+        if (user == null) return "redirect:/login";
 
-        // Path Validation
-        if (avatarUrl == null || !avatarUrl.startsWith("/avatar/")) {
+        if (!service.isValidAvatarPath(avatarUrl)) {
             redirect.addFlashAttribute("error", "Invalid avatar selection.");
             return "redirect:/choose-avatar";
         }
 
-        repo.setAvatarUrl(user.getUsername(), avatarUrl);
+        service.setAvatarUrl(user.getUsername(), avatarUrl);
         redirect.addFlashAttribute("success", "Profile picture updated!");
-        return "redirect:/settings"; // or "redirect:/profilepicture" if you prefer
+        return "redirect:/settings"; // or "redirect:/profilepicture"
     }
+    
 }
