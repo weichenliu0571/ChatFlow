@@ -19,4 +19,5 @@ public interface UserRepository extends JpaRepository<User, String> {
     // prefix and limit method
     List<User> findTop10ByUsernameStartingWithIgnoreCaseOrderByUsernameAsc(String prefix);
 
+
 }

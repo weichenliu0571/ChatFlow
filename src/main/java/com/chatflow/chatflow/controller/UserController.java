@@ -9,42 +9,24 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.chatflow.chatflow.model.User;
-import com.chatflow.chatflow.repository.UserRepository;
+import com.chatflow.chatflow.service.UserSuggestionService;
 
 @RestController @RequestMapping("/users")
 public class UserController {
-    private final UserRepository userRepo;
+    
+    private final UserSuggestionService suggestionService;
 
-    public UserController(UserRepository userRepo) {
-        this.userRepo = userRepo;
+    public UserController(UserSuggestionService suggestionService) {
+        this.suggestionService = suggestionService;
     }
 
     // autocomplete endpoint
     @GetMapping("/suggest")
     public List<String> suggestUsers(@RequestParam(required = false) String q, Principal principal) {
-        String query = (q == null) ? "": q.trim();
+        
+        String me = (principal != null) ? principal.getName() : null;
+        return suggestionService.suggestUsernames(q,me);
 
-        // to avoid expensive queries
-        if (query.length() < 2) {
-            return List.of();
-        }
-
-        // transforming the data to a stream allows us to transform the data (in this case we just have a list of usernames from the user models)
-        List<String> names = userRepo.findTop10ByUsernameStartingWithIgnoreCaseOrderByUsernameAsc(query)
-            .stream()
-            .map(User::getUsername)
-            .toList();
-
-        // to remove the current user
-        if (principal != null) {
-            String me = principal.getName();
-            names = names.stream()
-                .filter(n -> !n.equalsIgnoreCase(me)) // only keeps if the name is not equal to me
-                .toList();
-        }
-
-        return names;
     }
 
 }

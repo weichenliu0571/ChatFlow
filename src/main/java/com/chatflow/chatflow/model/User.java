@@ -15,7 +15,7 @@ public class User {
     private String password;
 
     @Column(name = "avatar")
-    private String avatarUrl;
+    private String avatar;
 
     @Column(nullable = false)
     private boolean enabled;
@@ -23,10 +23,10 @@ public class User {
     // requirement: no args constructor
     public User() {}
 
-    public User(String username, String password, String avatarUrl, boolean enabled) {
+    public User(String username, String password, String avatar, boolean enabled) {
         this.username = username;
         this.password = password;
-        this.avatarUrl = avatarUrl;
+        this.avatar = avatar;
         this.enabled = enabled;
     }
 
@@ -37,8 +37,8 @@ public class User {
     public String getPassword() { return password; }
     public void setPassword(String password) { this.password = password; }
 
-    public String getAvatarUrl() { return avatarUrl; }
-    public void setAvatarUrl(String avatarUrl) { this.avatarUrl = avatarUrl; }
+    public String getAvatar() { return avatar; }
+    public void setAvatar(String avatar) { this.avatar = avatar; }
 
     public boolean isEnabled() { return enabled; }
     public void setEnabled(boolean enabled) { this.enabled = enabled; }
