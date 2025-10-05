@@ -1,0 +1,176 @@
+<!doctype html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <title>Friends - ChatFlow</title>
+  <link href="/css/app.css" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <!-- CSRF token -->
+  <meta name="_csrf" th:content="${_csrf.token}"/>
+  <meta name="_csrf_header" th:content="${_csrf.headerName}"/>
+
+  <script>
+    function setActiveTab(activeId, inactiveId) {
+      const active = document.getElementById(activeId);
+      const inactive = document.getElementById(inactiveId);
+
+      active.classList.add('border-blue-500', 'text-blue-600', 'font-semibold');
+      active.classList.remove('border-transparent', 'text-gray-500');
+
+      inactive.classList.add('border-transparent', 'text-gray-500');
+      inactive.classList.remove('border-blue-500', 'text-blue-600', 'font-semibold');
+    }
+
+    function showTab(tab) {
+      const friendsSection = document.getElementById('friendsSection');
+      const requestsSection = document.getElementById('requestsSection');
+      if (tab === 'friends') {
+        friendsSection.classList.remove('hidden');
+        requestsSection.classList.add('hidden');
+        setActiveTab('friendsTab', 'requestsTab');
+      } else {
+        requestsSection.classList.remove('hidden');
+        friendsSection.classList.add('hidden');
+        setActiveTab('requestsTab', 'friendsTab');
+      }
+    }
+
+    document.addEventListener("DOMContentLoaded", () => {
+      const token = document.querySelector('meta[name="_csrf"]').content;
+      const header = document.querySelector('meta[name="_csrf_header"]').content;
+
+      // Accept buttons
+      document.querySelectorAll(".accept-btn").forEach(btn => {
+        btn.addEventListener("click", async () => {
+          const id = btn.dataset.id;
+          const card = btn.closest("div[data-request-id]");
+          try {
+            const res = await fetch(`/api/friend-requests/${id}/accept`, {
+              method: "POST",
+              headers: { [header]: token }
+            });
+            if (res.ok) {
+              card.remove();
+              alert("Friend request accepted!");
+            } else alert("Error accepting request.");
+          } catch (err) {
+            console.error(err);
+            alert("Server error.");
+          }
+        });
+      });
+
+      // Decline buttons
+      document.querySelectorAll(".decline-btn").forEach(btn => {
+        btn.addEventListener("click", async () => {
+          const id = btn.dataset.id;
+          const card = btn.closest("div[data-request-id]");
+          try {
+            const res = await fetch(`/api/friend-requests/${id}/decline`, {
+              method: "POST",
+              headers: { [header]: token }
+            });
+            if (res.ok) {
+              card.remove();
+              alert("Friend request declined.");
+            } else alert("Error declining request.");
+          } catch (err) {
+            console.error(err);
+            alert("Server error.");
+          }
+        });
+      });
+    });
+  </script>
+</head>
+
+<body class="bg-gray-100 min-h-screen flex flex-col text-gray-800">
+  <!-- Navbar -->
+  <nav class="bg-white shadow-md px-6 py-3 flex justify-between items-center">
+    <div class="text-2xl font-bold text-blue-600">ChatFlow</div>
+
+    <div class="flex items-center gap-4">
+      <!-- Home Icon -->
+      <a th:href="@{/}" class="hover:opacity-80 transition" title="Home">
+        <img src="/avatar/houseicon.png" alt="Home" class="w-8 h-8 rounded-full object-cover border">
+      </a>
+
+      <!-- Friends Icon -->
+      <a th:href="@{/friends}" class="hover:opacity-80 transition" title="Friends">
+        <img src="/avatar/friends.jpg" alt="Friends" class="w-8 h-8 rounded-full object-cover border">
+      </a>
+    </div>
+  </nav>
+
+  <!-- Main Content -->
+  <main class="flex-1 p-8">
+    <h1 class="text-3xl font-bold text-blue-600 mb-6">My Friends</h1>
+
+    <!-- Tabs -->
+    <div class="flex gap-6 border-b border-gray-300 mb-6">
+      <button id="friendsTab" onclick="showTab('friends')"
+              class="pb-2 border-b-2 border-blue-500 font-semibold text-blue-600 transition-colors">
+        Friends
+      </button>
+      <button id="requestsTab" onclick="showTab('requests')"
+              class="pb-2 border-b-2 border-transparent text-gray-500 hover:text-blue-600 transition-colors">
+        Friend Requests
+      </button>
+    </div>
+
+    <!-- Friends Grid -->
+    <div id="friendsSection" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+      <div th:if="${#lists.isEmpty(friends)}" class="text-gray-500">
+        You have no friends yet.
+      </div>
+
+      <div th:each="f : ${friends}"
+           class="bg-white rounded-lg shadow p-4 flex items-center justify-between gap-4 border hover:shadow-md transition">
+        <div class="flex items-center gap-3">
+          <div class="w-12 h-12 rounded-full bg-green-500 text-white flex items-center justify-center font-bold">
+            <span th:text="${#strings.substring(f.friend.username,0,1).toUpperCase()}">U</span>
+          </div>
+          <div>
+            <p class="font-semibold text-gray-800" th:text="${f.friend.username}">Friend</p>
+            <p class="text-sm text-gray-500"
+               th:text="'Friends since ' + ${#temporals.format(f.since, 'MMM dd, yyyy')}">Date</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Friend Requests Grid -->
+    <div id="requestsSection" class="hidden grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+      <div th:if="${#lists.isEmpty(pendingRequests)}" class="text-gray-500">
+        No pending requests.
+      </div>
+
+      <div th:each="req : ${pendingRequests}"
+           class="bg-white rounded-lg shadow p-4 flex items-center justify-between gap-4 border hover:shadow-md transition"
+           th:attr="data-request-id=${req.id}">
+        <div class="flex items-center gap-3">
+          <div class="w-12 h-12 rounded-full bg-blue-500 text-white flex items-center justify-center font-bold">
+            <span th:text="${#strings.substring(req.requester.username,0,1).toUpperCase()}">U</span>
+          </div>
+          <div>
+            <p class="font-semibold text-gray-800" th:text="${req.requester.username}">Requester</p>
+            <p class="text-sm text-gray-500"
+               th:text="${#temporals.format(req.createdAt, 'MMM dd, yyyy')}">Date</p>
+          </div>
+        </div>
+        <div class="flex gap-2">
+          <button class="bg-green-500 hover:bg-green-600 text-white px-3 py-1 rounded text-sm accept-btn"
+                  th:attr="data-id=${req.id}">
+            Accept
+          </button>
+          <button class="bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded text-sm decline-btn"
+                  th:attr="data-id=${req.id}">
+            Decline
+          </button>
+        </div>
+      </div>
+    </div>
+  </main>
+</body>
+</html>
