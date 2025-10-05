@@ -10,7 +10,7 @@
     <meta name="_csrf" th:content="${_csrf.token}"/>
     <meta name="_csrf_header" th:content="${_csrf.headerName}"/>
     <meta name="current-user" th:content="${username}"/>
-    
+
     <script src="/js/app.js"></script>
 </head>
 
@@ -18,83 +18,121 @@
     <!-- Navbar -->
     <nav class="bg-white shadow-md px-6 py-3 flex justify-between items-center">
         <div class="text-2xl font-bold text-blue-600">ChatFlow</div>
-        <div class="relative" id="profileMenu">
-            <button onclick="toggleDropdown()">
-                <img th:if="${avatarUrl != null}"
-                     th:src="${avatarUrl}"
-                     alt="avatar"
-                     class="w-8 h-8 rounded-full object-cover border" />
-                <div th:if="${avatarUrl == null}"
-                     class="w-8 h-8 rounded-full bg-blue-500 text-white flex items-center justify-center font-bold">
-                    <span th:text="${#strings.isEmpty(username) ? 'U' : #strings.substring(username,0,1)}">U</span>
+
+        <div class="flex items-center gap-4">
+            <!-- Home Icon -->
+            <a th:href="@{/}" class="hover:opacity-80 transition" title="Home">
+                <img src="/avatar/houseicon.png" alt="Home" class="w-8 h-8 rounded-full object-cover border">
+            </a>
+
+            <!-- Friends Icon -->
+            <a th:href="@{/friends}" class="hover:opacity-80 transition" title="Friends">
+                <img src="/avatar/friends.jpg" alt="Friends" class="w-8 h-8 rounded-full object-cover border">
+            </a>
+
+            <!-- Profile Menu -->
+            <div class="relative" id="profileMenu">
+                <button onclick="toggleDropdown()">
+                    <img th:if="${avatarUrl != null}"
+                         th:src="${avatarUrl}"
+                         alt="avatar"
+                         class="w-8 h-8 rounded-full object-cover border" />
+                    <div th:if="${avatarUrl == null}"
+                         class="w-8 h-8 rounded-full bg-blue-500 text-white flex items-center justify-center font-bold">
+                        <span th:text="${#strings.isEmpty(username) ? 'U' : #strings.substring(username,0,1)}">U</span>
+                    </div>
+                </button>
+
+                <div id="profileDropdown"
+                     class="hidden absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg py-2 z-10">
+                    <p class="px-4 py-2 text-gray-700 font-semibold"
+                       th:text="${#strings.isEmpty(username) ? 'Unknown User' : username}">
+                        Username
+                    </p>
+                    <a href="/profilepicture" class="block px-4 py-2 text-gray-600 hover:bg-gray-100">Change Profile Picture</a>
+                    <a href="/settings" class="block px-4 py-2 text-gray-600 hover:bg-gray-100">Settings</a>
+                    <form th:action="@{/logout}" method="post" class="mt-2 border-t">
+                        <input type="hidden" name="_csrf" th:value="${_csrf.token}" />
+                        <button type="submit"
+                                class="w-full text-left px-4 py-2 text-red-600 hover:bg-gray-100">
+                            Log out
+                        </button>
+                    </form>
                 </div>
-            </button>
-            <div id="profileDropdown"
-                 class="hidden absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg py-2 z-10">
-                <p class="px-4 py-2 text-gray-700 font-semibold"
-                   th:text="${#strings.isEmpty(username) ? 'Unknown User' : username}">
-                    Username
-                </p>
-                <a href="/profilepicture" class="block px-4 py-2 text-gray-600 hover:bg-gray-100">Change Profile Picture</a>
-                <a href="/settings" class="block px-4 py-2 text-gray-600 hover:bg-gray-100">Settings</a>
-                <form th:action="@{/logout}" method="post" class="mt-2 border-t">
-                    <input type="hidden" name="_csrf" th:value="${_csrf.token}" />
-                    <button type="submit"
-                            class="w-full text-left px-4 py-2 text-red-600 hover:bg-gray-100">
-                        Log out
-                    </button>
-                </form>
             </div>
         </div>
     </nav>
 
     <!-- Main Content -->
     <div class="flex flex-1 overflow-hidden">
+        <!-- Sidebar -->
         <aside class="w-64 bg-white shadow-inner p-4 overflow-y-auto">
-            <h2 class="text-xl font-semibold mb-4 text-blue-600">Friends</h2>
+            <h2 class="text-xl font-semibold mb-4 text-blue-600">Chat With</h2>
 
-            <!-- Search row -->
-            <div class="mb-2 flex items-center gap-2">
-                <div class="flex-1">
-                    <input type="text" id="friendSearch" placeholder="Enter username"
-                           class="border px-2 py-1 rounded w-full"
-                           oninput="searchUsers(this.value)">
+            <!-- Friends Section -->
+            <div class="ml-3 mb-6">
+                <!-- Header row: Friends + button -->
+                <div class="flex items-center justify-between mb-2">
+                    <h3 class="text-lg font-medium text-gray-700">Friends</h3>
+                    <button onclick="toggleFriendSearch()"
+                            class="text-blue-600 text-lg font-bold hover:text-blue-800">
+                        +
+                    </button>
                 </div>
-                <button onclick="addFriendFromInput()"
-                        class="bg-green-500 text-white px-3 py-1 rounded">
-                    Add
-                </button>
+
+                <!-- Search area (hidden by default) -->
+                <div id="friendSearchArea" class="hidden">
+                    <div class="mb-2 flex items-center gap-2">
+                        <div class="flex-1">
+                            <input type="text" id="friendSearch" placeholder="Enter username"
+                                   class="border px-2 py-1 rounded w-full"
+                                   oninput="searchUsers(this.value)">
+                        </div>
+                        <button onclick="addFriendFromInput()"
+                                class="bg-green-500 text-white px-3 py-1 rounded">
+                            Add
+                        </button>
+                    </div>
+
+                    <!-- Popup with Suggestions -->
+                    <div id="searchResults"
+                         class="bg-white border rounded w-full mb-4 hidden max-h-56 overflow-y-auto shadow"></div>
+                </div>
+
+                <!-- Friends list -->
+                <ul id="userList"></ul>
             </div>
 
-            <!-- Popup with Suggestions -->
-            <div id="searchResults"
-                 class="bg-white border rounded w-full mb-6 hidden max-h-56 overflow-y-auto shadow"></div>
+            <!-- Divider -->
+            <hr class="border-gray-300 mb-6 ml-2 mr-2">
 
-            <!-- Friends list -->
-            <ul id="userList"></ul>
-
-            <!-- AI Agents -->
-            <h2 class="text-xl font-semibold mb-4 text-blue-600 mt-5">AI Agents</h2>
-            <ul>
-                <li class="mb-2">
-                    <button onclick="openChat('Grok')"
-                            class="w-full text-left px-3 py-2 rounded hover:bg-gray-100">
-                        Grok
-                    </button>
-                </li>
-            </ul>
+            <!-- AI Agents Section -->
+            <div class="ml-3">
+                <h3 class="text-lg font-medium text-gray-700 mb-2">AI Agents</h3>
+                <ul>
+                    <li class="mb-2">
+                        <button onclick="openChat('Grok')"
+                                class="w-full text-left px-3 py-2 rounded hover:bg-gray-100">
+                            Grok
+                        </button>
+                    </li>
+                </ul>
+            </div>
         </aside>
 
-        <!-- Chat area -->
+        <!-- Chat Area -->
         <main class="flex-1 p-6 flex flex-col bg-gray-50 overflow-hidden">
             <div class="flex-1 overflow-y-auto mb-4">
-                <h2 class="text-xl font-semibold mb-4 text-blue-600">Chat with <span id="chatWith">...</span></h2>
+                <h2 class="text-xl font-semibold mb-4 text-blue-600">
+                    Chat with <span id="chatWith">...</span>
+                </h2>
                 <div id="chatMessages" class="space-y-2 flex flex-col">
                     <p class="text-gray-500">Select a friend or AI agent to start chatting.</p>
                 </div>
             </div>
+
             <div class="flex mt-auto">
-                <input type="text" placeholder="Type your message..."
+                <input id="messageInput" type="text" placeholder="Type your message..."
                        class="flex-1 px-4 py-2 rounded-l-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500"/>
                 <button onclick="sendMessage()" 
                         class="bg-blue-500 text-white px-4 py-2 rounded-r-lg hover:bg-blue-600">
@@ -103,5 +141,29 @@
             </div>
         </main>
     </div>
+
+    <!-- Inline JS -->
+    <script>
+        // Toggle friend search
+        function toggleFriendSearch() {
+            const area = document.getElementById("friendSearchArea");
+            const button = event.currentTarget;
+            const isHidden = area.classList.toggle("hidden");
+            button.textContent = isHidden ? "+" : "×";
+        }
+
+        // Profile dropdown toggle
+        function toggleDropdown() {
+            const dropdown = document.getElementById("profileDropdown");
+            dropdown.classList.toggle("hidden");
+        }
+
+        // Example: dynamically open chat (placeholder)
+        function openChat(name) {
+            document.getElementById("chatWith").textContent = name;
+            const chatMessages = document.getElementById("chatMessages");
+            chatMessages.innerHTML = `<p class="text-gray-600">You are now chatting with <strong>${name}</strong>.</p>`;
+        }
+    </script>
 </body>
 </html>
