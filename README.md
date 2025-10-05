@@ -83,7 +83,7 @@ By weichenliu0751 (Weichen Liu) and yox1000 (Jake Barbaresso)
 
    -- Default privileges for new tables/sequences
    ALTER DEFAULT PRIVILEGES IN SCHEMA public
-      GRANT SELECT, INSERT, UPDATE, DELETE ON TABLES TO chatflow_user;
+   GRANT SELECT, INSERT, UPDATE, DELETE ON TABLES TO chatflow_user;
 
    ALTER DEFAULT PRIVILEGES IN SCHEMA public
    GRANT USAGE, SELECT, UPDATE ON SEQUENCES TO chatflow_user;
