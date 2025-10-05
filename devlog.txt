@@ -23,3 +23,5 @@ DEVLOG
 10/01/25 - (weichenliu) refactored rest of the features to follow: front end -> controller -> service -> repository -> model
 ------------------------------------------------------------------------------------------------------------------------------
 10/01/25 - (yox1000) small adjustments to html organization
+------------------------------------------------------------------------------------------------------------------------------
+10/04/25 - (weichenLiu) completed friends system: friends and friend requests now viewable. Friend requests work.

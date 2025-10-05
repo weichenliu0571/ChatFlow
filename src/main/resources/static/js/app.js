@@ -171,4 +171,27 @@ function addFriendFromInput() {
         const box = document.getElementById("searchResults");
         if (box) box.classList.add("hidden");
     });
+
+}
+
+// button to toggle friend search
+function toggleFriendSearch() {
+    const area = document.getElementById("friendSearchArea");
+    const button = event.currentTarget;
+    const isHidden = area.classList.toggle("hidden");
+    button.textContent = isHidden ? "+" : "×";
+}
+
+// Profile dropdown toggle
+function toggleDropdown() {
+    const dropdown = document.getElementById("profileDropdown");
+    dropdown.classList.toggle("hidden");
+}
+
+// for opening chat with specific person
+function openChat(name) {
+    document.getElementById("chatWith").textContent = name;
+    const chatMessages = document.getElementById("chatMessages");
+    chatMessages.innerHTML = `<p class="text-gray-600">You are now
+     chatting with <strong>${name}</strong>.</p>`;
 }

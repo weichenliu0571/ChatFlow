@@ -3,50 +3,61 @@ package com.chatflow.chatflow.service;
 import com.chatflow.chatflow.model.Friendship;
 import com.chatflow.chatflow.model.User;
 import com.chatflow.chatflow.repository.FriendshipRepository;
-import com.chatflow.chatflow.repository.UserRepository;
-import org.springframework.stereotype.Service;
 
 import java.util.List;
 
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
 @Service
 public class FriendshipService {
+        private final FriendshipRepository friendshipRepository;
 
-    private final FriendshipRepository friendshipRepository;
-    private final UserRepository userRepository;
+        public FriendshipService(FriendshipRepository friendshipRepository) {
+                this.friendshipRepository = friendshipRepository;
+        }
 
-    public FriendshipService(FriendshipRepository friendshipRepository,
-            UserRepository userRepository) {
-        this.friendshipRepository = friendshipRepository;
-        this.userRepository = userRepository;
-    }
+        /**
+         * Create a mutual friendship (A ↔ B).
+         */
+        @Transactional
+        public void createMutualFriendship(User user1, User user2) {
+                // Prevent duplicates
+                if (!friendshipRepository.existsByUserAndFriend(user1, user2)) {
+                Friendship f1 = new Friendship();
+                f1.setUser(user1);
+                f1.setFriend(user2);
+                friendshipRepository.save(f1);
+                }
 
-    // Get all friends of a user
-    public List<Friendship> getFriends(String username) {
-        User user = userRepository.findByUsername(username)
-                .orElseThrow(() -> new IllegalArgumentException("User not found: " + username));
-        return friendshipRepository.findByUser(user);
-    }
+                if (!friendshipRepository.existsByUserAndFriend(user2, user1)) {
+                Friendship f2 = new Friendship();
+                f2.setUser(user2);
+                f2.setFriend(user1);
+                friendshipRepository.save(f2);
+                }
+        }
 
-    // Check if two users are friends
-    public boolean areFriends(String username, String friendUsername) {
-        User user = userRepository.findByUsername(username)
-                .orElseThrow(() -> new IllegalArgumentException("User not found: " + username));
-        User friend = userRepository.findByUsername(friendUsername)
-                .orElseThrow(() -> new IllegalArgumentException("User not found: " + friendUsername));
+        /**
+         * Optional helper for removing a friendship (if you ever add an "unfriend" feature).
+         */
+        @Transactional
+        public void removeMutualFriendship(User user1, User user2) {
+                friendshipRepository.findByUserAndFriend(user1, user2)
+                        .ifPresent(friendshipRepository::delete);
+                friendshipRepository.findByUserAndFriend(user2, user1)
+                        .ifPresent(friendshipRepository::delete);
+        }
 
-        return friendshipRepository.existsByUserAndFriend(user, friend);
-    }
+        // Get all friendships for a user (the "other side" is in getFriend())
+        @Transactional(readOnly = true)
+                public List<Friendship> findFriendsOf(User user) {
+                return friendshipRepository.findByUser(user);
+        }
 
-    // Remove a friendship (both sides)
-    public void removeFriend(String username, String friendUsername) {
-        User user = userRepository.findByUsername(username)
-                .orElseThrow(() -> new IllegalArgumentException("User not found: " + username));
-        User friend = userRepository.findByUsername(friendUsername)
-                .orElseThrow(() -> new IllegalArgumentException("User not found: " + friendUsername));
-
-        friendshipRepository.findByUserAndFriend(user, friend)
-                .ifPresent(friendshipRepository::delete);
-        friendshipRepository.findByUserAndFriend(friend, user)
-                .ifPresent(friendshipRepository::delete);
-    }
+        // FriendshipService
+        public boolean areFriends(User a, User b) {
+                return friendshipRepository.existsByUserAndFriend(a, b)
+                || friendshipRepository.existsByUserAndFriend(b, a);
+        }
 }

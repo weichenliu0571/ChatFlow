@@ -82,26 +82,63 @@
         });
       });
     });
+    
+    // Profile dropdown toggle
+    function toggleDropdown() {
+        const dropdown = document.getElementById("profileDropdown");
+        dropdown.classList.toggle("hidden");
+    }
+
   </script>
 </head>
 
 <body class="bg-gray-100 min-h-screen flex flex-col text-gray-800">
-  <!-- Navbar -->
-  <nav class="bg-white shadow-md px-6 py-3 flex justify-between items-center">
-    <div class="text-2xl font-bold text-blue-600">ChatFlow</div>
+    <nav class="bg-white shadow-md px-6 py-3 flex justify-between items-center">
+        <div class="text-2xl font-bold text-blue-600">ChatFlow</div>
 
-    <div class="flex items-center gap-4">
-      <!-- Home Icon -->
-      <a th:href="@{/}" class="hover:opacity-80 transition" title="Home">
-        <img src="/avatar/houseicon.png" alt="Home" class="w-8 h-8 rounded-full object-cover border">
-      </a>
+        <div class="flex items-center gap-4">
+            <!-- Home Icon -->
+            <a th:href="@{/}" class="hover:opacity-80 transition" title="Home">
+                <img src="/avatar/houseicon.png" alt="Home" class="w-8 h-8 rounded-full object-cover border">
+            </a>
 
-      <!-- Friends Icon -->
-      <a th:href="@{/friends}" class="hover:opacity-80 transition" title="Friends">
-        <img src="/avatar/friends.jpg" alt="Friends" class="w-8 h-8 rounded-full object-cover border">
-      </a>
-    </div>
-  </nav>
+            <!-- Friends Icon -->
+            <a th:href="@{/friends}" class="hover:opacity-80 transition" title="Friends">
+                <img src="/avatar/friends.jpg" alt="Friends" class="w-8 h-8 rounded-full object-cover border">
+            </a>
+
+            <!-- Profile Menu -->
+            <div class="relative" id="profileMenu">
+                <button onclick="toggleDropdown()">
+                    <img th:if="${avatarUrl != null}"
+                         th:src="${avatarUrl}"
+                         alt="avatar"
+                         class="w-8 h-8 rounded-full object-cover border" />
+                    <div th:if="${avatarUrl == null}"
+                         class="w-8 h-8 rounded-full bg-blue-500 text-white flex items-center justify-center font-bold">
+                        <span th:text="${#strings.isEmpty(username) ? 'U' : #strings.substring(username,0,1)}">U</span>
+                    </div>
+                </button>
+
+                <div id="profileDropdown"
+                     class="hidden absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg py-2 z-10">
+                    <p class="px-4 py-2 text-gray-700 font-semibold"
+                       th:text="${#strings.isEmpty(username) ? 'Unknown User' : username}">
+                        Username
+                    </p>
+                    <a href="/profilepicture" class="block px-4 py-2 text-gray-600 hover:bg-gray-100">Change Profile Picture</a>
+                    <a href="/settings" class="block px-4 py-2 text-gray-600 hover:bg-gray-100">Settings</a>
+                    <form th:action="@{/logout}" method="post" class="mt-2 border-t">
+                        <input type="hidden" name="_csrf" th:value="${_csrf.token}" />
+                        <button type="submit"
+                                class="w-full text-left px-4 py-2 text-red-600 hover:bg-gray-100">
+                            Log out
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </nav>
 
   <!-- Main Content -->
   <main class="flex-1 p-8">

@@ -3,42 +3,57 @@ package com.chatflow.chatflow.service;
 import com.chatflow.chatflow.model.FriendRequest;
 import com.chatflow.chatflow.model.User;
 import com.chatflow.chatflow.repository.FriendRequestRepository;
-import com.chatflow.chatflow.repository.FriendshipRepository;
 import com.chatflow.chatflow.repository.UserRepository;
+
+import jakarta.transaction.Transactional;
+
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class FriendRequestService {
 
     private final FriendRequestRepository friendRequestRepository;
-    private final FriendshipRepository friendshipRepository;
+    private final FriendshipService friendshipService;
     private final UserRepository userRepository;
 
-    public FriendRequestService(FriendRequestRepository friendRequestRepository,
-            FriendshipRepository friendshipRepository,
-            UserRepository userRepository) {
+    public FriendRequestService(FriendRequestRepository friendRequestRepository, FriendshipService friendshipService, UserRepository userRepository) {
         this.friendRequestRepository = friendRequestRepository;
-        this.friendshipRepository = friendshipRepository;
+        this.friendshipService = friendshipService;
         this.userRepository = userRepository;
     }
 
-    // Send a new request
+    @Transactional
     public FriendRequest sendRequest(String requester, String addressee) {
+        // check if user sending request to themselves
         if (requester.equals(addressee)) {
             throw new IllegalArgumentException("Cannot send a request to yourself");
         }
 
+        // check if requester or addressee are not valid
         User requesterUser = userRepository.findByUsername(requester)
                 .orElseThrow(() -> new IllegalArgumentException("User not found: " + requester));
 
         User addresseeUser = userRepository.findByUsername(addressee)
                 .orElseThrow(() -> new IllegalArgumentException("User not found: " + addressee));
 
+        if (friendshipService.areFriends(requesterUser, addresseeUser)) {
+            throw new IllegalArgumentException("Already Friends!");
+        }
+
         // check if request already exists
-        if (friendRequestRepository.findByRequesterAndAddressee(requesterUser, addresseeUser).isPresent()) {
-            throw new IllegalStateException("Request already exists");
+        Optional<FriendRequest> existingOpt = friendRequestRepository.findByRequesterAndAddressee(requesterUser, addresseeUser);
+
+        // if request exists and was not declined, we cannot send another request, otherwise if it exists, but was declined we send another
+        if (existingOpt.isPresent()) {
+            FriendRequest fr = existingOpt.get();
+            if (fr.getStatus() != FriendRequest.Status.DECLINED && fr.getStatus() != FriendRequest.Status.CANCELED) {
+                throw new IllegalStateException("Request already exists");
+            }
+            friendRequestRepository.delete(fr);
+            friendRequestRepository.flush(); // makes sure delete happens first
         }
 
         FriendRequest request = new FriendRequest();
@@ -49,6 +64,7 @@ public class FriendRequestService {
     }
 
     // Accept a request
+    @Transactional
     public void acceptRequest(Long requestId) {
         FriendRequest request = friendRequestRepository.findById(requestId)
                 .orElseThrow(() -> new IllegalArgumentException("Request not found"));
@@ -57,19 +73,8 @@ public class FriendRequestService {
         request.setRespondedAt(java.time.OffsetDateTime.now());
         friendRequestRepository.save(request);
 
-        // Create friendship record
-        friendshipRepository.save(new com.chatflow.chatflow.model.Friendship() {
-            {
-                setUser(request.getRequester());
-                setFriend(request.getAddressee());
-            }
-        });
-        friendshipRepository.save(new com.chatflow.chatflow.model.Friendship() {
-            {
-                setUser(request.getAddressee());
-                setFriend(request.getRequester());
-            }
-        });
+        // Use abstracted service here
+        friendshipService.createMutualFriendship(request.getRequester(), request.getAddressee());
     }
 
     // Decline a request

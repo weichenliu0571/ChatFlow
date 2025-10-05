@@ -15,6 +15,7 @@
 </head>
 
 <body class="bg-gray-100 min-h-screen flex flex-col">
+    
     <!-- Navbar -->
     <nav class="bg-white shadow-md px-6 py-3 flex justify-between items-center">
         <div class="text-2xl font-bold text-blue-600">ChatFlow</div>
@@ -142,28 +143,5 @@
         </main>
     </div>
 
-    <!-- Inline JS -->
-    <script>
-        // Toggle friend search
-        function toggleFriendSearch() {
-            const area = document.getElementById("friendSearchArea");
-            const button = event.currentTarget;
-            const isHidden = area.classList.toggle("hidden");
-            button.textContent = isHidden ? "+" : "×";
-        }
-
-        // Profile dropdown toggle
-        function toggleDropdown() {
-            const dropdown = document.getElementById("profileDropdown");
-            dropdown.classList.toggle("hidden");
-        }
-
-        // Example: dynamically open chat (placeholder)
-        function openChat(name) {
-            document.getElementById("chatWith").textContent = name;
-            const chatMessages = document.getElementById("chatMessages");
-            chatMessages.innerHTML = `<p class="text-gray-600">You are now chatting with <strong>${name}</strong>.</p>`;
-        }
-    </script>
 </body>
 </html>

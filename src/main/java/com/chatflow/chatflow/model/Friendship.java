@@ -22,15 +22,14 @@ public class Friendship {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    // One user in the friendship
     @ManyToOne(optional = false)
-    @JoinColumn(name = "user_username", nullable = false)
+    @JoinColumn(name = "user_username", referencedColumnName = "username", nullable = false)
     private User user;
 
-    // The other user in the friendship
     @ManyToOne(optional = false)
-    @JoinColumn(name = "friend_username", nullable = false)
+    @JoinColumn(name = "friend_username", referencedColumnName = "username", nullable = false)
     private User friend;
+
 
     @Column(name = "since", nullable = false, columnDefinition = "TIMESTAMPTZ")
     private OffsetDateTime since = OffsetDateTime.now();
