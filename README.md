@@ -69,20 +69,23 @@ By weichenliu0751 (Weichen Liu) and yox1000 (Jake Barbaresso)
       CONSTRAINT fk_friend_friend FOREIGN KEY (friend_username) REFERENCES users(username) ON DELETE CASCADE
    );
 
-   -- GRANTING PERMISSIONS TO USER
-   -- allow chatflow_user to use the auto-increment sequence
-   GRANT USAGE, SELECT, UPDATE ON SEQUENCE friend_requests_id_seq TO chatflow_user;
+   -- ===========================================
+   -- GRANT PERMISSIONS TO chatflow_user
+   -- ===========================================
 
-   -- make sure the user can access schema + tables
+   -- Access to sequences
+   GRANT USAGE, SELECT, UPDATE ON SEQUENCE friend_requests_id_seq TO chatflow_user;
+   GRANT USAGE, SELECT, UPDATE ON SEQUENCE friendships_id_seq TO chatflow_user;
+
+   -- Access to schema and existing tables
    GRANT USAGE ON SCHEMA public TO chatflow_user;
    GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA public TO chatflow_user;
 
-   -- future tables
+   -- Default privileges for new tables/sequences
    ALTER DEFAULT PRIVILEGES IN SCHEMA public
       GRANT SELECT, INSERT, UPDATE, DELETE ON TABLES TO chatflow_user;
 
-   -- future sequences
    ALTER DEFAULT PRIVILEGES IN SCHEMA public
-      GRANT USAGE, SELECT, UPDATE ON SEQUENCES TO chatflow_user;
+   GRANT USAGE, SELECT, UPDATE ON SEQUENCES TO chatflow_user;
    ```
 4. Then in main directory run: mvnw.cmd spring-boot:run

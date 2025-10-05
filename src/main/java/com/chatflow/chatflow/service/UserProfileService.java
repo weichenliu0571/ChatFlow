@@ -22,6 +22,12 @@ public class UserProfileService {
         return repo.findAvatarByUsername(username).orElse(null);
     }
 
+    @Transactional(readOnly = true)
+    public User getUser(String username) {
+        return repo.findByUsername(username)
+                .orElseThrow(() -> new IllegalArgumentException("User not found: " + username));
+    }
+
     @Transactional
     public void setAvatarUrl(String username, String url) {
         User u = repo.findByUsername(username)
