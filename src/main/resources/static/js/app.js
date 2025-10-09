@@ -195,3 +195,42 @@ function openChat(name) {
     chatMessages.innerHTML = `<p class="text-gray-600">You are now
      chatting with <strong>${name}</strong>.</p>`;
 }
+
+document.addEventListener("DOMContentLoaded", () => {
+    const metaTag = document.querySelector("meta[name='chatFriend']");
+    const chatFriend = metaTag ? metaTag.content.trim() : "";
+
+    if (chatFriend) {
+        // Set header text
+        document.getElementById("chatWith").textContent = chatFriend;
+
+        // Load previous messages from backend
+        fetch(`/chat/history?recipient=${encodeURIComponent(chatFriend)}`)
+            .then(res => res.json())
+            .then(messages => {
+                const chatMessages = document.getElementById("chatMessages");
+                chatMessages.innerHTML = "";
+
+                if (messages.length === 0) {
+                    const msg = document.createElement("p");
+                    msg.className = "text-gray-500";
+                    msg.textContent = `No previous messages with ${chatFriend}.`;
+                    chatMessages.appendChild(msg);
+                    return;
+                }
+
+                messages.forEach(m => {
+                    const div = document.createElement("div");
+                    if (m.startsWith("You:")) {
+                        div.className = "self-end bg-blue-500 text-white px-4 py-2 rounded-2xl max-w-xs text-sm mb-2";
+                        div.textContent = m.replace("You:", "").trim();
+                    } else {
+                        div.className = "self-start bg-gray-200 text-gray-800 px-4 py-2 rounded-2xl max-w-xs text-sm mb-2";
+                        div.textContent = m;
+                    }
+                    chatMessages.appendChild(div);
+                });
+            })
+            .catch(err => console.error("Failed to load chat history:", err));
+    }
+});

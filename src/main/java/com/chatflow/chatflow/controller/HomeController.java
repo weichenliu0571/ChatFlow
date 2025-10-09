@@ -7,7 +7,9 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 
+import com.chatflow.chatflow.model.Friendship;
 import com.chatflow.chatflow.model.User;
 import com.chatflow.chatflow.service.UserProfileService;
 import com.chatflow.chatflow.service.FriendRequestService;
@@ -20,7 +22,8 @@ public class HomeController {
     private final FriendshipService friendshipService;
     private final FriendRequestService friendRequestService;
 
-    public HomeController(UserProfileService userProfileService, FriendshipService friendshipService, FriendRequestService friendRequestService) {
+    public HomeController(UserProfileService userProfileService, FriendshipService friendshipService,
+            FriendRequestService friendRequestService) {
         this.userProfileService = userProfileService;
         this.friendshipService = friendshipService;
         this.friendRequestService = friendRequestService;
@@ -34,21 +37,26 @@ public class HomeController {
         String avatarUrl = (username != null) ? userProfileService.getAvatarUrl(username) : null;
         model.addAttribute("avatarUrl", avatarUrl);
 
-        return "index";  // loads templates/index.html
+        if (username != null) {
+            User currentUser = userProfileService.getUser(username);
+            List<Friendship> allFriends = friendshipService.findFriendsOf(currentUser);
+            model.addAttribute("friendsPreview", allFriends.stream().limit(10).toList());
+        } else {
+            model.addAttribute("friendsPreview", List.of());
+        }
+
+        return "index";
     }
 
     @GetMapping("/friends")
     public String friends(@AuthenticationPrincipal UserDetails user, Model model) {
         String username = (user != null) ? user.getUsername() : null;
         model.addAttribute("username", username);
-        model.addAttribute("avatarUrl", 
-            (username != null) ? userProfileService.getAvatarUrl(username) : null);
+        model.addAttribute("avatarUrl",
+                (username != null) ? userProfileService.getAvatarUrl(username) : null);
 
         if (username != null) {
-            // Get user object directly through userProfileService repo access
             User currentUser = userProfileService.getUser(username);
-
-            // Load friends and pending requests
             model.addAttribute("friends", friendshipService.findFriendsOf(currentUser));
             model.addAttribute("pendingRequests", friendRequestService.getPendingRequests(username));
         } else {
@@ -57,5 +65,26 @@ public class HomeController {
         }
 
         return "friends";
+    }
+
+    @GetMapping("/chat/{friendUsername}")
+    public String chatWithFriend(@PathVariable String friendUsername,
+            @AuthenticationPrincipal UserDetails user,
+            Model model) {
+        String username = (user != null) ? user.getUsername() : null;
+        model.addAttribute("username", username);
+        model.addAttribute("avatarUrl",
+                (username != null) ? userProfileService.getAvatarUrl(username) : null);
+        model.addAttribute("chatFriend", friendUsername);
+
+        if (username != null) {
+            User currentUser = userProfileService.getUser(username);
+            List<Friendship> allFriends = friendshipService.findFriendsOf(currentUser);
+            model.addAttribute("friendsPreview", allFriends.stream().limit(10).toList());
+        } else {
+            model.addAttribute("friendsPreview", List.of());
+        }
+
+        return "index";
     }
 }
